@@ -1165,6 +1165,7 @@
       .itin-card { opacity: 1 !important; transform: none !important; }
       .gal-item { opacity: 1 !important; transform: none !important; }
       #envelope-screen { display: none !important; }
+      #main-content { visibility: visible !important; }
     }
   </style>
 </head>
@@ -1215,7 +1216,7 @@
   <!-- ════════════════════════════════════
        MAIN CONTENT
   ════════════════════════════════════ -->
-  <main>
+  <main id="main-content" style="visibility:hidden">
 
     <!-- ── 1. HERO ─────────────────────────────────── -->
     <section id="hero" aria-label="Portada">
@@ -1699,6 +1700,9 @@
 
     function showInvitation() {
       envScreen.style.display = 'none';
+      // Revelar el contenido de la invitación (estaba oculto para no spoilear)
+      var mainEl = document.getElementById('main-content');
+      if (mainEl) mainEl.style.visibility = 'visible';
       heroAnim();
       spawnParticles();
       scrollAnims();
@@ -1738,12 +1742,15 @@
       var playPromise = envVideo.play();
 
       // Crossfade simultáneo: imagen sale, video entra — nunca hay negro
-      gsap.to(envImage, { opacity: 0, duration: 0.55, ease: 'power2.inOut' });
+      gsap.to(envImage, {
+        opacity: 0, duration: 0.55, ease: 'power2.inOut',
+        onComplete: function () { envImage.style.display = 'none'; }
+      });
       gsap.to(envVideo, { opacity: 1, duration: 0.55, ease: 'power2.inOut' });
 
       // Si el navegador bloquea el play (política de autoplay), ir directo a la invitación
       if (playPromise !== undefined) {
-        playPromise.catch(function () { onVideoEnded(); });
+        playPromise.catch(function () { showInvitation(); });
       }
     }
 
