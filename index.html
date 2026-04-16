@@ -4,7 +4,22 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
   <title>Diego &amp; Camila · 20·09·MMXXVII</title>
-  <meta name="description" content="Invitación de boda de Diego &amp; Camila. 20 de Septiembre 2027, Ciudad de México." />
+  <meta name="description" content="Estás invitado a la boda de Diego &amp; Camila. 20 de Septiembre 2027, Ciudad de México. Una noche que jamás olvidarás." />
+
+  <!-- ── Open Graph — card bonita en WhatsApp, iMessage, Telegram ── -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:title"       content="💍 Diego &amp; Camila · 20 · IX · MMXXVII" />
+  <meta property="og:description" content="Nos casamos y queremos que estés ahí. Una noche mágica en Ciudad de México — 20 de Septiembre 2027 · Abre tu invitación ✉️" />
+  <meta property="og:image"       content="https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=1200&q=85" />
+  <meta property="og:image:width"  content="1200" />
+  <meta property="og:image:height" content="800" />
+  <meta property="og:locale"      content="es_MX" />
+
+  <!-- ── Twitter / X card ── -->
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="💍 Diego &amp; Camila · 20 · IX · MMXXVII" />
+  <meta name="twitter:description" content="Nos casamos y queremos que estés ahí. Una noche mágica en CDMX — 20 de Septiembre 2027 ✉️" />
+  <meta name="twitter:image"       content="https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=1200&q=85" />
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -2217,11 +2232,18 @@
   /* ── RSVP – WhatsApp link ──────────────────────── */
   document.getElementById('btn-wa').addEventListener('click', function () {
     var name = (document.getElementById('rsvp-name').value.trim()) || 'Invitado/a';
-    this.href =
-      'https://wa.me/525512345678?text=' +
-      encodeURIComponent(
-        'Hola, confirmo mi asistencia a la boda de Diego & Camila el 20 de septiembre de 2027. Mi nombre es: ' + name
-      );
+    var msg  =
+      '💍 *¡Confirmo mi asistencia!*\n\n' +
+      'Con mucha alegría les hago saber que asistiré a su boda. ' +
+      'Gracias por incluirme en un día tan especial y lleno de amor. 🌸\n\n' +
+      '📋 *Mis datos:*\n' +
+      '👤 Nombre: ' + name + '\n\n' +
+      '📅 *Boda de Diego & Camila*\n' +
+      '🗓  20 de Septiembre de 2027\n' +
+      '⛪ Parroquia de Santa Catarina · Coyoacán · 16:00 hrs\n' +
+      '🥂 Hacienda de los Morales · Polanco · 18:30 hrs\n\n' +
+      '¡Los veo pronto! Con todo mi cariño ✨';
+    this.href = 'https://wa.me/525512345678?text=' + encodeURIComponent(msg);
   });
   </script>
 
