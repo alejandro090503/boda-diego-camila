@@ -1709,21 +1709,22 @@
       startCountdown();
     }
 
-    // Arranca el flash blanco 0.6s antes del final del video
+    // Flash blanco arranca 2s antes del final — en móvil timeupdate es impreciso
+    // así que empezamos muy temprano con fade de 1s; a duration-1 ya es 100% blanco
     envVideo.addEventListener('timeupdate', function () {
-      if (!flashStarted && envVideo.duration && envVideo.currentTime >= envVideo.duration - 0.6) {
+      if (!flashStarted && envVideo.duration && envVideo.currentTime >= envVideo.duration - 2) {
         flashStarted = true;
         gsap.to(envFlash, {
           opacity: 1,
-          duration: 0.5,
-          ease: 'power2.inOut'
+          duration: 1,
+          ease: 'power2.in'
         });
       }
     });
 
-    // Cuando el video termina, el flash ya está cubriendo — corte limpio
+    // Cuando el video termina el flash ya es blanco sólido — corte limpio
     envVideo.addEventListener('ended', function () {
-      gsap.set(envFlash, { opacity: 1 }); // garantiza opacidad total
+      gsap.set(envFlash, { opacity: 1 });
       showInvitation();
     });
 
