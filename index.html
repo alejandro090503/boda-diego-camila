@@ -75,7 +75,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      perspective: 1200px;
     }
 
     .envelope-hint {
@@ -127,7 +126,6 @@
       position: relative;
       width: 320px;
       height: 220px;
-      transform-style: preserve-3d;
       cursor: pointer;
       opacity: 0;
       transform: scale(0.8) translateY(30px);
@@ -143,7 +141,7 @@
         0 20px 60px rgba(0,0,0,0.5),
         0 0 0 1px rgba(201,169,110,0.3),
         inset 0 -3px 8px rgba(0,0,0,0.15);
-      overflow: hidden;
+      z-index: 3;
     }
 
     .envelope-body::before {
@@ -170,12 +168,12 @@
       pointer-events: none;
     }
 
-    /* Wax seal */
+    /* Wax seal — en la unión del flapo con el cuerpo */
     .wax-seal {
       position: absolute;
-      bottom: -18px;
+      top: 50%;
       left: 50%;
-      transform: translateX(-50%);
+      transform: translate(-50%, -50%);
       width: 52px;
       height: 52px;
       border-radius: 50%;
@@ -198,60 +196,58 @@
       text-shadow: 0 1px 2px rgba(0,0,0,0.3);
     }
 
-    /* Envelope flap (top) */
+    /* Envelope flap (top) — superficie única, sin front/back
+       clip-path anula backface-visibility en todos los browsers,
+       por eso usamos una sola cara y animamos con transformPerspective de GSAP */
     .envelope-flap {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
-      height: 50%;
+      height: 52%;          /* cubre ligeramente el sello */
       transform-origin: top center;
-      transform-style: preserve-3d;
-      z-index: 5;
+      z-index: 6;           /* encima del sello (z:10 del sello está bien) */
     }
 
-    .flap-front {
+    /* Una sola superficie triangular — sin back-face */
+    .flap-surface {
       position: absolute;
       inset: 0;
-      background: linear-gradient(180deg, #C9A96E 0%, #B8935A 100%);
+      background: linear-gradient(160deg, #D4B896 0%, #C9A96E 45%, #B8935A 100%);
       clip-path: polygon(0 0, 50% 100%, 100% 0);
-      backface-visibility: hidden;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
     }
 
-    .flap-front::before {
+    .flap-surface::after {
       content: '';
       position: absolute;
       inset: 0;
       clip-path: polygon(0 0, 50% 100%, 100% 0);
-      border: 1px solid rgba(255,255,255,0.15);
+      background: repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 18px,
+        rgba(255,255,255,0.04) 18px,
+        rgba(255,255,255,0.04) 19px
+      );
     }
 
-    .flap-back {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(180deg, #E8D5A8 0%, #D4B896 100%);
-      clip-path: polygon(0 0, 50% 100%, 100% 0);
-      transform: rotateX(180deg);
-      backface-visibility: hidden;
-    }
-
-    /* Card inside envelope */
+    /* Card inside envelope — empieza oculta bajo el cuerpo (z-index: 2 < body z-index: 3) */
     .envelope-card {
       position: absolute;
       left: 10%;
       right: 10%;
-      top: 15%;
-      bottom: 10%;
+      top: 20%;
+      bottom: 8%;
       background: linear-gradient(180deg, #FFFDF7 0%, #F8F4EE 100%);
       border-radius: 3px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+      box-shadow: 0 2px 16px rgba(0,0,0,0.2);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       padding: 20px 16px;
       z-index: 2;
-      transform: translateY(0);
     }
 
     .card-ornament {
@@ -409,7 +405,7 @@
     .hero-bg {
       position: absolute;
       inset: -20% 0;
-      background: url('https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=860&q=80') center/cover no-repeat;
+      background: url('https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=860&q=80') center/cover no-repeat;
       transform-origin: center center;
       will-change: transform;
     }
@@ -891,7 +887,7 @@
     }
 
     /* ── FAMILY ──────────────────────────────────────── */
-    #familia { background: var(--surface); }
+    #familia { background: var(--surface); text-align: center; }
 
     .fam-group { margin-bottom: 36px; }
     .fam-group:last-child { margin-bottom: 0; }
@@ -910,9 +906,10 @@
 
     .fam-row {
       display: flex;
-      align-items: flex-start;
-      gap: 14px;
-      padding: 12px 0;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 14px 0;
       border-bottom: 1px solid rgba(160,122,74,.07);
     }
 
@@ -922,17 +919,14 @@
       font-family: var(--sans);
       font-size: 9px;
       font-weight: 700;
-      letter-spacing: 1.5px;
+      letter-spacing: 2px;
       text-transform: uppercase;
       color: var(--accent);
-      min-width: 62px;
-      padding-top: 3px;
-      flex-shrink: 0;
     }
 
     .fam-name {
       font-family: var(--serif);
-      font-size: 17px;
+      font-size: 18px;
       font-weight: 400;
       color: var(--text);
       line-height: 1.5;
@@ -1309,10 +1303,9 @@
       <!-- Envelope body -->
       <div class="envelope-body"></div>
 
-      <!-- Flap -->
+      <!-- Flap — superficie única -->
       <div class="envelope-flap" id="env-flap">
-        <div class="flap-front"></div>
-        <div class="flap-back"></div>
+        <div class="flap-surface"></div>
       </div>
 
       <!-- Wax seal -->
@@ -1409,11 +1402,12 @@
       <div class="loc-cards">
         <article class="loc-card fu">
           <p class="loc-type">Ceremonia Civil</p>
-          <h3 class="loc-name">Jardín de los Olivos</h3>
-          <p class="loc-addr">Av. Insurgentes Sur 1602<br>Col. Del Valle, CDMX</p>
+          <h3 class="loc-name">Parroquia de Santa Catarina</h3>
+          <p class="loc-addr">Jardín Centenario s/n<br>Col. Coyoacán, CDMX</p>
           <p class="loc-hour">16:00 hrs</p>
-          <a href="https://maps.app.goo.gl/jardinolivos" target="_blank" rel="noopener noreferrer"
-             class="btn-maps" aria-label="Ver Jardín de los Olivos en Google Maps">
+          <a href="https://www.google.com/maps/search/?api=1&query=Parroquia+de+Santa+Catarina+Martir,+Jardin+Centenario,+Coyoacan,+Ciudad+de+Mexico"
+             target="_blank" rel="noopener noreferrer"
+             class="btn-maps" aria-label="Ver Parroquia de Santa Catarina en Google Maps">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
               <circle cx="12" cy="9" r="2.5"/>
@@ -1424,11 +1418,12 @@
 
         <article class="loc-card fu">
           <p class="loc-type">Recepción</p>
-          <h3 class="loc-name">Salón Chapultepec Grand</h3>
-          <p class="loc-addr">Lago Andrómaco 18<br>Col. Anáhuac, CDMX</p>
+          <h3 class="loc-name">Hacienda de los Morales</h3>
+          <p class="loc-addr">Vázquez de Mella 525<br>Col. Los Morales Polanco, CDMX</p>
           <p class="loc-hour">18:30 hrs</p>
-          <a href="https://maps.app.goo.gl/chapultepecgrand" target="_blank" rel="noopener noreferrer"
-             class="btn-maps" aria-label="Ver Salón Chapultepec Grand en Google Maps">
+          <a href="https://www.google.com/maps/search/?api=1&query=Hacienda+de+los+Morales,+Vazquez+de+Mella+525,+Polanco,+Ciudad+de+Mexico"
+             target="_blank" rel="noopener noreferrer"
+             class="btn-maps" aria-label="Ver Hacienda de los Morales en Google Maps">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
               <circle cx="12" cy="9" r="2.5"/>
@@ -1632,51 +1627,57 @@
       <p class="subtitle fu">Algunos de nuestros recuerdos juntos</p>
 
       <div class="gal-grid" role="list">
+        <!-- 1. Wide — novios en el altar -->
         <div class="gal-item" role="listitem">
-          <img src="https://images.unsplash.com/photo-1502635385003-6ae4f5e5d3fd?w=600&q=80"
-               alt="Diego y Camila en un momento especial" loading="lazy" width="600" height="260" />
+          <img src="https://images.unsplash.com/photo-1519741497674-611481863552?w=700&q=85"
+               alt="Diego y Camila en el altar" loading="lazy" width="700" height="260" />
           <div class="gal-overlay">
-            <span class="gal-overlay-text">Nuestro primer viaje juntos</span>
+            <span class="gal-overlay-text">El momento más esperado</span>
           </div>
           <div class="gal-shimmer"></div>
         </div>
+        <!-- 2. Novios abrazados -->
         <div class="gal-item" role="listitem">
-          <img src="https://images.unsplash.com/photo-1520854221256-17d7dc28c471?w=400&q=80"
-               alt="La pareja sonriendo" loading="lazy" width="400" height="200" />
+          <img src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=400&q=85"
+               alt="Los novios abrazados" loading="lazy" width="400" height="200" />
           <div class="gal-overlay">
-            <span class="gal-overlay-text">Sonrisas infinitas</span>
+            <span class="gal-overlay-text">Juntos para siempre</span>
           </div>
           <div class="gal-shimmer"></div>
         </div>
+        <!-- 3. Ceremonia romántica -->
         <div class="gal-item" role="listitem">
-          <img src="https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=400&q=80"
-               alt="Un recuerdo fotográfico" loading="lazy" width="400" height="240" />
+          <img src="https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=400&q=85"
+               alt="Ceremonia de boda" loading="lazy" width="400" height="240" />
           <div class="gal-overlay">
-            <span class="gal-overlay-text">Atardecer perfecto</span>
+            <span class="gal-overlay-text">Nuestra ceremonia</span>
           </div>
           <div class="gal-shimmer"></div>
         </div>
+        <!-- 4. Primer baile -->
         <div class="gal-item" role="listitem">
-          <img src="https://images.unsplash.com/photo-1469371670807-013ccf25f16a?w=400&q=80"
-               alt="Momento juntos" loading="lazy" width="400" height="240" />
+          <img src="https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=400&q=85"
+               alt="Primer baile de los novios" loading="lazy" width="400" height="240" />
           <div class="gal-overlay">
-            <span class="gal-overlay-text">El día que todo cambió</span>
+            <span class="gal-overlay-text">Nuestro primer baile</span>
           </div>
           <div class="gal-shimmer"></div>
         </div>
+        <!-- 5. Anillos -->
         <div class="gal-item" role="listitem">
-          <img src="https://images.unsplash.com/photo-1507504031003-b417219a0fde?w=400&q=80"
-               alt="Otro recuerdo de la pareja" loading="lazy" width="400" height="200" />
+          <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=400&q=85"
+               alt="Los anillos de boda" loading="lazy" width="400" height="200" />
           <div class="gal-overlay">
-            <span class="gal-overlay-text">Para siempre</span>
+            <span class="gal-overlay-text">El símbolo de nuestro amor</span>
           </div>
           <div class="gal-shimmer"></div>
         </div>
+        <!-- 6. Wide — celebración -->
         <div class="gal-item" role="listitem">
-          <img src="https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80"
-               alt="Celebrando juntos" loading="lazy" width="600" height="220" />
+          <img src="https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=700&q=85"
+               alt="Celebración de la boda" loading="lazy" width="700" height="220" />
           <div class="gal-overlay">
-            <span class="gal-overlay-text">Celebrando la vida juntos</span>
+            <span class="gal-overlay-text">Una noche que jamás olvidaremos</span>
           </div>
           <div class="gal-shimmer"></div>
         </div>
@@ -1878,14 +1879,16 @@
       if (opened) return;
       opened = true;
 
+      // Ocultar hint inmediatamente
+      gsap.to(hint, { opacity: 0, duration: 0.25, ease: 'power2.out' });
+
       var openTl = gsap.timeline({
         onComplete: function () {
-          // Fade out the entire envelope screen
           gsap.to(screen, {
             opacity: 0,
-            duration: 0.8,
+            duration: 0.9,
             ease: 'power2.inOut',
-            delay: 0.5,
+            delay: 0.6,
             onComplete: function () {
               screen.style.display = 'none';
               heroAnim();
@@ -1897,38 +1900,42 @@
         }
       });
 
-      // Break the seal
       openTl
+        // 1. Romper el sello
         .to(seal, {
-          scale: 1.3,
+          scale: 1.4,
           opacity: 0,
-          duration: 0.4,
+          duration: 0.35,
           ease: 'power2.in'
         })
-        // Open the flap
+        // 2. Abrir el flapo — transformPerspective aplicado al elemento mismo
+        //    (evita depender de perspective del ancestro, que es lo que causaba el bug visual)
         .to(flap, {
-          rotateX: -180,
-          duration: 1,
+          rotateX: -175,
+          transformPerspective: 700,
+          transformOrigin: 'top center',
+          duration: 1.1,
           ease: 'power3.inOut'
-        }, '-=0.1')
-        // Slide card up
+        }, '-=0.05')
+        // 3. Subir z-index de la tarjeta ANTES de animarla (para que aparezca encima del cuerpo)
+        .call(function () {
+          gsap.set(card, { zIndex: 10 });
+        })
+        // 4. La tarjeta sale del sobre hacia arriba
         .to(card, {
-          y: -160,
-          duration: 0.8,
-          ease: 'power2.out'
-        }, '-=0.3')
-        // Scale up envelope + card
+          y: -130,
+          duration: 0.85,
+          ease: 'back.out(1.2)'
+        }, '-=0.25')
+        // 5. Pequeño zoom del sobre para dramatismo
         .to(envelope, {
-          scale: 1.15,
-          duration: 0.4,
+          scale: 1.1,
+          duration: 0.5,
           ease: 'power2.out'
-        }, '-=0.5');
+        }, '-=0.6');
 
-      // Confetti burst
-      setTimeout(spawnConfetti, 600);
-
-      // Hide hint
-      gsap.to(hint, { opacity: 0, duration: 0.3, ease: 'power2.out' });
+      // Confetti al abrirse el flapo
+      setTimeout(spawnConfetti, 700);
     }
 
     // Click or tap to open
