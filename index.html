@@ -129,18 +129,6 @@
       pointer-events: none;
     }
 
-    /* Tapa sobre el watermark de DeeVid AI (esquina superior derecha) */
-    .watermark-cover {
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 130px;
-      height: 40px;
-      z-index: 5;
-      /* Tono que emula el fondo crema del sobre */
-      background: linear-gradient(135deg, rgba(240,225,185,0.96) 60%, transparent 100%);
-      pointer-events: none;
-    }
 
     /* Hint text — "Toca para abrir" */
     .envelope-hint {
@@ -1190,9 +1178,6 @@
     <!-- Imagen estática del sobre (IA generada) -->
     <img id="env-image" src="sobre.jpg" alt="Sobre invitación Diego &amp; Camila" />
 
-    <!-- Cubre el watermark de DeeVid AI (esquina superior derecha) -->
-    <div class="watermark-cover"></div>
-
     <!-- Video de apertura (IA generada) — oculto hasta el tap -->
     <video id="env-video" src="sobre-apertura.mp4" playsinline webkit-playsinline muted preload="auto"></video>
 
@@ -1710,23 +1695,33 @@
     });
 
     // ── Paso 3: el video termina → flash blanco cubre todo → invitación ──
-    function onVideoEnded() {
-      // El flash blanco cubre el video para que no se vea ningún elemento interno
-      gsap.to(envFlash, {
-        opacity: 1,
-        duration: 0.45,
-        ease: 'power2.inOut',
-        onComplete: function () {
-          envScreen.style.display = 'none';
-          heroAnim();
-          spawnParticles();
-          scrollAnims();
-          startCountdown();
-        }
-      });
+    var flashStarted = false;
+
+    function showInvitation() {
+      envScreen.style.display = 'none';
+      heroAnim();
+      spawnParticles();
+      scrollAnims();
+      startCountdown();
     }
 
-    envVideo.addEventListener('ended', onVideoEnded);
+    // Arranca el flash blanco 0.6s antes del final del video
+    envVideo.addEventListener('timeupdate', function () {
+      if (!flashStarted && envVideo.duration && envVideo.currentTime >= envVideo.duration - 0.6) {
+        flashStarted = true;
+        gsap.to(envFlash, {
+          opacity: 1,
+          duration: 0.5,
+          ease: 'power2.inOut'
+        });
+      }
+    });
+
+    // Cuando el video termina, el flash ya está cubriendo — corte limpio
+    envVideo.addEventListener('ended', function () {
+      gsap.set(envFlash, { opacity: 1 }); // garantiza opacidad total
+      showInvitation();
+    });
 
     // ── Paso 2: usuario toca → crossfade imagen→video simultáneo (sin negro) ──
     function openEnvelope() {
