@@ -91,7 +91,7 @@
       overflow: hidden;
       cursor: pointer;
       opacity: 0;
-      background: #000;
+      background: #fff;
     }
 
     /* Imagen estática del sobre — cubre toda la pantalla */
@@ -115,6 +115,16 @@
       object-position: center;
       z-index: 3;
       opacity: 0;
+    }
+
+    /* Overlay blanco que cubre todo al finalizar — evita flash de contenido */
+    #env-flash {
+      position: absolute;
+      inset: 0;
+      background: #fff;
+      z-index: 50;
+      opacity: 0;
+      pointer-events: none;
     }
 
     /* Tapa sobre el watermark de DeeVid AI (esquina superior derecha) */
@@ -1184,6 +1194,9 @@
     <!-- Video de apertura (IA generada) — oculto hasta el tap -->
     <video id="env-video" src="sobre-apertura.mp4" playsinline webkit-playsinline muted preload="auto"></video>
 
+    <!-- Overlay blanco: se activa al terminar el video para cubrir cualquier flash -->
+    <div id="env-flash"></div>
+
     <!-- Hint inferior -->
     <p class="envelope-hint" id="env-hint">Toca para abrir</p>
   </div>
@@ -1666,6 +1679,7 @@
     var envScreen = document.getElementById('envelope-screen');
     var envImage  = document.getElementById('env-image');
     var envVideo  = document.getElementById('env-video');
+    var envFlash  = document.getElementById('env-flash');
     var hint      = document.getElementById('env-hint');
     var confettiC = document.getElementById('confetti-container');
     var opened    = false;
@@ -1724,14 +1738,14 @@
       }
     }
 
-    // ── Paso 3: el video termina → fade out blanco → invitación ──
+    // ── Paso 3: el video termina → flash blanco cubre todo → invitación ──
     function onVideoEnded() {
       spawnConfetti();
-      gsap.to(envScreen, {
-        opacity: 0,
-        duration: 1.1,
+      // El flash blanco cubre el video para que no se vea ningún elemento interno
+      gsap.to(envFlash, {
+        opacity: 1,
+        duration: 0.45,
         ease: 'power2.inOut',
-        delay: 0.1,
         onComplete: function () {
           envScreen.style.display = 'none';
           heroAnim();
@@ -1744,7 +1758,7 @@
 
     envVideo.addEventListener('ended', onVideoEnded);
 
-    // ── Paso 2: usuario toca → imagen fades → video se reproduce ──
+    // ── Paso 2: usuario toca → crossfade imagen→video simultáneo (sin negro) ──
     function openEnvelope() {
       if (opened) return;
       opened = true;
@@ -1753,22 +1767,19 @@
       gsap.killTweensOf(envImage);
 
       // Hint desaparece
-      gsap.to(hint, { opacity: 0, duration: 0.25 });
+      gsap.to(hint, { opacity: 0, duration: 0.2 });
 
-      // Imagen se va con fade out rápido
-      gsap.to(envImage, {
-        opacity: 0,
-        duration: 0.6,
-        ease: 'power2.inOut',
-        onComplete: function () {
-          // Video aparece y comienza a reproducirse
-          envVideo.style.opacity = '1';
-          envVideo.play().catch(function () {
-            // Si el navegador bloquea el play, forzamos la invitación
-            onVideoEnded();
-          });
-        }
-      });
+      // Arrancar el video inmediatamente
+      var playPromise = envVideo.play();
+
+      // Crossfade simultáneo: imagen sale, video entra — nunca hay negro
+      gsap.to(envImage, { opacity: 0, duration: 0.55, ease: 'power2.inOut' });
+      gsap.to(envVideo, { opacity: 1, duration: 0.55, ease: 'power2.inOut' });
+
+      // Si el navegador bloquea el play (política de autoplay), ir directo a la invitación
+      if (playPromise !== undefined) {
+        playPromise.catch(function () { onVideoEnded(); });
+      }
     }
 
     // Tap en cualquier punto abre el sobre
