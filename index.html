@@ -80,10 +80,10 @@
     button{ cursor: pointer; border: none; background: none; font-family: inherit; }
 
     /* ══════════════════════════════════════════════════════
-       ENVELOPE — PANTALLA COMPLETA CON TEXTURA REAL
+       ENVELOPE — IMAGEN + VIDEO IA
     ══════════════════════════════════════════════════════ */
 
-    /* El sobre ES la pantalla completa */
+    /* Contenedor pantalla completa */
     #envelope-screen {
       position: fixed;
       inset: 0;
@@ -91,70 +91,43 @@
       overflow: hidden;
       cursor: pointer;
       opacity: 0;
-
-      /* ── Textura de papel/lino realista ── */
-      background:
-        /* Fibras horizontales del lino */
-        repeating-linear-gradient(
-          0deg,
-          transparent 0px, transparent 2px,
-          rgba(130,90,20,0.055) 2px, rgba(130,90,20,0.055) 3px
-        ),
-        /* Fibras verticales del lino */
-        repeating-linear-gradient(
-          90deg,
-          transparent 0px, transparent 4px,
-          rgba(130,90,20,0.035) 4px, rgba(130,90,20,0.035) 5px
-        ),
-        /* Vetas diagonales sutiles */
-        repeating-linear-gradient(
-          135deg,
-          transparent 0px, transparent 12px,
-          rgba(180,130,50,0.018) 12px, rgba(180,130,50,0.018) 13px
-        ),
-        /* Gradiente base pergamino */
-        linear-gradient(
-          158deg,
-          #F5E8C0 0%,
-          #EDD9A0 12%,
-          #E2C882 25%,
-          #D6B870 38%,
-          #CDAA68 50%,
-          #D4B67A 62%,
-          #DEC890 75%,
-          #EAD9A8 88%,
-          #F2E6C0 100%
-        );
-
-      /* Sombra interna para dar volumen */
-      box-shadow:
-        inset 0   0  80px rgba(100,65,15,0.18),
-        inset 0  40px 60px rgba(80,50,10,0.10),
-        inset 0 -40px 60px rgba(80,50,10,0.10),
-        inset 40px 0  60px rgba(80,50,10,0.08),
-        inset -40px 0 60px rgba(80,50,10,0.08);
+      background: #000;
     }
 
-    /* Borde interior decorativo — marco del sobre */
-    #envelope-screen::before {
-      content: '';
-      position: absolute;
-      inset: 18px;
-      border: 1px solid rgba(160,115,45,0.22);
-      pointer-events: none;
-      z-index: 1;
-    }
-
-    /* Líneas de doblez del sobre (diagonales desde esquinas al centro) */
-    #envelope-screen::after {
-      content: '';
+    /* Imagen estática del sobre — cubre toda la pantalla */
+    #env-image {
       position: absolute;
       inset: 0;
-      background:
-        linear-gradient(to bottom right, rgba(120,80,20,0.06) 0%, transparent 50%),
-        linear-gradient(to bottom left,  rgba(120,80,20,0.06) 0%, transparent 50%);
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      z-index: 2;
+    }
+
+    /* Video de apertura — oculto hasta que el usuario toca */
+    #env-video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      z-index: 3;
+      opacity: 0;
+    }
+
+    /* Tapa sobre el watermark de DeeVid AI (esquina superior derecha) */
+    .watermark-cover {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 130px;
+      height: 40px;
+      z-index: 5;
+      /* Tono que emula el fondo crema del sobre */
+      background: linear-gradient(135deg, rgba(240,225,185,0.96) 60%, transparent 100%);
       pointer-events: none;
-      z-index: 1;
     }
 
     /* Hint text — "Toca para abrir" */
@@ -167,11 +140,12 @@
       font-size: 11px;
       letter-spacing: 5px;
       text-transform: uppercase;
-      color: rgba(100,70,20,0.55);
+      color: rgba(100,70,20,0.7);
       opacity: 0;
       cursor: pointer;
       white-space: nowrap;
-      z-index: 20;
+      z-index: 10;
+      text-shadow: 0 1px 4px rgba(255,255,255,0.6);
     }
 
     .envelope-hint::after {
@@ -187,88 +161,6 @@
     @keyframes hintPulse {
       0%, 100% { opacity: 0.4; width: 32px; }
       50%       { opacity: 1;   width: 54px; }
-    }
-
-    /* Botanical SVG — cubre toda la pantalla */
-    .env-botanical {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 2;
-    }
-
-    /* ── SOLAPA / FLAP — triángulo superior pantalla completa ── */
-    .envelope-flap {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 52%;
-      transform-origin: top center;
-      z-index: 8;
-    }
-
-    .flap-surface {
-      position: absolute;
-      inset: 0;
-      /* Textura igual al cuerpo pero tono ligeramente más oscuro */
-      background:
-        repeating-linear-gradient(
-          0deg,
-          transparent 0px, transparent 2px,
-          rgba(120,80,15,0.06) 2px, rgba(120,80,15,0.06) 3px
-        ),
-        repeating-linear-gradient(
-          90deg,
-          transparent 0px, transparent 4px,
-          rgba(120,80,15,0.04) 4px, rgba(120,80,15,0.04) 5px
-        ),
-        linear-gradient(
-          180deg,
-          #EDD9A0 0%,
-          #E0C882 30%,
-          #D2B268 55%,
-          #C8A560 75%,
-          #D0B070 100%
-        );
-      clip-path: polygon(0 0, 50% 100%, 100% 0);
-      /* Sombra del pliegue */
-      box-shadow: 0 8px 32px rgba(90,55,10,0.22);
-    }
-
-    /* Línea de pliegue de la solapa */
-    .flap-fold-line {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, rgba(100,65,15,0.15), rgba(100,65,15,0.2), rgba(100,65,15,0.15), transparent);
-      z-index: 9;
-      pointer-events: none;
-    }
-
-    /* ── SELLO DE CERA — grande y centrado ── */
-    .wax-seal {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 150px;
-      height: 150px;
-      z-index: 12;
-      filter:
-        drop-shadow(0 10px 28px rgba(80,20,10,0.55))
-        drop-shadow(0  4px  8px rgba(80,20,10,0.35))
-        drop-shadow(0  1px  3px rgba(80,20,10,0.25));
-    }
-
-    .wax-seal svg {
-      width: 100%;
-      height: 100%;
-      overflow: visible;
     }
 
     /* Gold confetti that bursts out */
@@ -1279,325 +1171,18 @@
 <body>
 
   <!-- ════════════════════════════════════
-       ENVELOPE OPENING SCREEN
+       ENVELOPE OPENING SCREEN — IMAGEN + VIDEO IA
   ════════════════════════════════════ -->
-  <!-- ════════ SOBRE PANTALLA COMPLETA ════════ -->
   <div id="envelope-screen" role="button" aria-label="Toca para abrir tu invitación">
 
-    <!-- Textura botánica full-screen -->
-    <svg class="env-botanical" viewBox="0 0 430 900" preserveAspectRatio="xMidYMid slice" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <g id="r-xl"><!-- Rosa grande: 7 pétalos externos + 6 internos + centro -->
-          <ellipse cx="0" cy="-20" rx="6"   ry="11" opacity="0.95"/>
-          <ellipse cx="0" cy="-20" rx="6"   ry="11" transform="rotate(51.4)"/>
-          <ellipse cx="0" cy="-20" rx="6"   ry="11" transform="rotate(102.8)"/>
-          <ellipse cx="0" cy="-20" rx="6"   ry="11" transform="rotate(154.3)"/>
-          <ellipse cx="0" cy="-20" rx="6"   ry="11" transform="rotate(205.7)"/>
-          <ellipse cx="0" cy="-20" rx="6"   ry="11" transform="rotate(257.1)"/>
-          <ellipse cx="0" cy="-20" rx="6"   ry="11" transform="rotate(308.6)"/>
-          <ellipse cx="0" cy="-13" rx="4"   ry="7.5" transform="rotate(25.7)"/>
-          <ellipse cx="0" cy="-13" rx="4"   ry="7.5" transform="rotate(77.1)"/>
-          <ellipse cx="0" cy="-13" rx="4"   ry="7.5" transform="rotate(128.6)"/>
-          <ellipse cx="0" cy="-13" rx="4"   ry="7.5" transform="rotate(180)"/>
-          <ellipse cx="0" cy="-13" rx="4"   ry="7.5" transform="rotate(231.4)"/>
-          <ellipse cx="0" cy="-13" rx="4"   ry="7.5" transform="rotate(282.8)"/>
-          <circle cx="0" cy="0" r="7"/>
-          <circle cx="0" cy="0" r="3.5"/>
-          <circle cx="0" cy="0" r="1.2" fill="rgba(90,55,10,0.4)"/>
-        </g>
-        <g id="r-md">
-          <ellipse cx="0" cy="-14" rx="4.5" ry="8"/>
-          <ellipse cx="0" cy="-14" rx="4.5" ry="8" transform="rotate(60)"/>
-          <ellipse cx="0" cy="-14" rx="4.5" ry="8" transform="rotate(120)"/>
-          <ellipse cx="0" cy="-14" rx="4.5" ry="8" transform="rotate(180)"/>
-          <ellipse cx="0" cy="-14" rx="4.5" ry="8" transform="rotate(240)"/>
-          <ellipse cx="0" cy="-14" rx="4.5" ry="8" transform="rotate(300)"/>
-          <ellipse cx="0" cy="-9"  rx="3"   ry="5.5" transform="rotate(30)"/>
-          <ellipse cx="0" cy="-9"  rx="3"   ry="5.5" transform="rotate(90)"/>
-          <ellipse cx="0" cy="-9"  rx="3"   ry="5.5" transform="rotate(150)"/>
-          <ellipse cx="0" cy="-9"  rx="3"   ry="5.5" transform="rotate(210)"/>
-          <ellipse cx="0" cy="-9"  rx="3"   ry="5.5" transform="rotate(270)"/>
-          <ellipse cx="0" cy="-9"  rx="3"   ry="5.5" transform="rotate(330)"/>
-          <circle cx="0" cy="0" r="5"/>
-          <circle cx="0" cy="0" r="2.2"/>
-        </g>
-        <g id="r-sm">
-          <ellipse cx="0" cy="-9" rx="3" ry="5.5"/>
-          <ellipse cx="0" cy="-9" rx="3" ry="5.5" transform="rotate(60)"/>
-          <ellipse cx="0" cy="-9" rx="3" ry="5.5" transform="rotate(120)"/>
-          <ellipse cx="0" cy="-9" rx="3" ry="5.5" transform="rotate(180)"/>
-          <ellipse cx="0" cy="-9" rx="3" ry="5.5" transform="rotate(240)"/>
-          <ellipse cx="0" cy="-9" rx="3" ry="5.5" transform="rotate(300)"/>
-          <circle cx="0" cy="0" r="3.5"/>
-          <circle cx="0" cy="0" r="1.5"/>
-        </g>
-        <g id="leaf-lg">
-          <path d="M0,0 C-5,-8 -6,-18 0,-24 C6,-18 5,-8 0,0Z"/>
-          <path d="M0,-12 L-4,-16 M0,-12 L4,-16" stroke-width="0.5"/>
-        </g>
-        <g id="leaf-sm">
-          <path d="M0,0 C-3,-5 -4,-12 0,-16 C4,-12 3,-5 0,0Z"/>
-        </g>
-        <g id="fl-5"><!-- flor 5 pétalos -->
-          <ellipse cx="0" cy="-6" rx="2.8" ry="4.5"/>
-          <ellipse cx="0" cy="-6" rx="2.8" ry="4.5" transform="rotate(72)"/>
-          <ellipse cx="0" cy="-6" rx="2.8" ry="4.5" transform="rotate(144)"/>
-          <ellipse cx="0" cy="-6" rx="2.8" ry="4.5" transform="rotate(216)"/>
-          <ellipse cx="0" cy="-6" rx="2.8" ry="4.5" transform="rotate(288)"/>
-          <circle cx="0" cy="0" r="3"/>
-        </g>
-      </defs>
+    <!-- Imagen estática del sobre (IA generada) -->
+    <img id="env-image" src="sobre.jpg" alt="Sobre invitación Diego &amp; Camila" />
 
-      <!-- stroke color marrón dorado muy sutil -->
-      <g stroke="#8B6520" stroke-width="0.75" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.22">
+    <!-- Cubre el watermark de DeeVid AI (esquina superior derecha) -->
+    <div class="watermark-cover"></div>
 
-        <!-- ══ ESQUINA SUPERIOR IZQUIERDA ══ -->
-        <g transform="translate(70,80)"><use href="#r-xl"/></g>
-        <g transform="translate(30,50)"><use href="#r-sm"/></g>
-        <g transform="translate(108,45) rotate(-15)"><use href="#r-sm"/></g>
-        <!-- tallos -->
-        <path d="M20,100 Q40,75 58,68"/>
-        <path d="M58,68 Q65,60 70,58"/>
-        <path d="M70,58 Q85,48 100,44"/>
-        <!-- hojas -->
-        <g transform="translate(38,84) rotate(-35)"><use href="#leaf-lg"/></g>
-        <g transform="translate(52,72) rotate(20)"><use href="#leaf-sm"/></g>
-        <g transform="translate(90,50) rotate(-10)"><use href="#leaf-sm"/></g>
-        <!-- flores pequeñas -->
-        <g transform="translate(18,120)"><use href="#fl-5"/></g>
-        <g transform="translate(8,60)"><use href="#fl-5"/></g>
-        <g transform="translate(120,22)"><use href="#fl-5"/></g>
-        <!-- puntos -->
-        <circle cx="16" cy="122" r="1.5" fill="#8B6520"/>
-        <circle cx="6"  cy="58"  r="1.2" fill="#8B6520"/>
-        <circle cx="122" cy="20" r="1.2" fill="#8B6520"/>
-
-        <!-- ══ ESQUINA SUPERIOR DERECHA ══ -->
-        <g transform="translate(360,80)"><use href="#r-xl"/></g>
-        <g transform="translate(400,50)"><use href="#r-sm"/></g>
-        <g transform="translate(322,45) rotate(15)"><use href="#r-sm"/></g>
-        <path d="M410,100 Q390,75 372,68"/>
-        <path d="M372,68 Q365,60 360,58"/>
-        <path d="M360,58 Q345,48 330,44"/>
-        <g transform="translate(392,84) rotate(35)"><use href="#leaf-lg"/></g>
-        <g transform="translate(378,72) rotate(-20)"><use href="#leaf-sm"/></g>
-        <g transform="translate(340,50) rotate(10)"><use href="#leaf-sm"/></g>
-        <g transform="translate(412,120)"><use href="#fl-5"/></g>
-        <g transform="translate(422,60)"><use href="#fl-5"/></g>
-        <g transform="translate(310,22)"><use href="#fl-5"/></g>
-        <circle cx="414" cy="122" r="1.5" fill="#8B6520"/>
-        <circle cx="424" cy="58"  r="1.2" fill="#8B6520"/>
-        <circle cx="308" cy="20"  r="1.2" fill="#8B6520"/>
-
-        <!-- ══ BORDE SUPERIOR CENTRO ══ -->
-        <g transform="translate(215,30)"><use href="#r-md"/></g>
-        <path d="M150,15 Q180,8 205,18"/>
-        <path d="M280,15 Q250,8 225,18"/>
-        <g transform="translate(165,22) rotate(-8)"><use href="#leaf-sm"/></g>
-        <g transform="translate(265,22) rotate(8)"><use href="#leaf-sm"/></g>
-        <g transform="translate(145,30)"><use href="#fl-5"/></g>
-        <g transform="translate(285,30)"><use href="#fl-5"/></g>
-        <circle cx="143" cy="18" r="1.2" fill="#8B6520"/>
-        <circle cx="287" cy="18" r="1.2" fill="#8B6520"/>
-
-        <!-- ══ BORDE IZQ CENTRO-ALTO ══ -->
-        <g transform="translate(25,280)"><use href="#r-md"/></g>
-        <path d="M8,240 Q12,258 18,270"/>
-        <path d="M8,320 Q12,302 18,290"/>
-        <g transform="translate(10,238) rotate(-25)"><use href="#leaf-lg"/></g>
-        <g transform="translate(10,322) rotate(25)"><use href="#leaf-lg"/></g>
-        <g transform="translate(4,195)"><use href="#fl-5"/></g>
-        <circle cx="4" cy="193" r="1.2" fill="#8B6520"/>
-
-        <!-- ══ BORDE DER CENTRO-ALTO ══ -->
-        <g transform="translate(405,280)"><use href="#r-md"/></g>
-        <path d="M422,240 Q418,258 412,270"/>
-        <path d="M422,320 Q418,302 412,290"/>
-        <g transform="translate(420,238) rotate(25)"><use href="#leaf-lg"/></g>
-        <g transform="translate(420,322) rotate(-25)"><use href="#leaf-lg"/></g>
-        <g transform="translate(426,195)"><use href="#fl-5"/></g>
-        <circle cx="426" cy="193" r="1.2" fill="#8B6520"/>
-
-        <!-- ══ ESQUINA INFERIOR IZQUIERDA ══ -->
-        <g transform="translate(65,820)"><use href="#r-xl"/></g>
-        <g transform="translate(25,850)"><use href="#r-sm"/></g>
-        <g transform="translate(105,855) rotate(10)"><use href="#r-sm"/></g>
-        <path d="M15,800 Q38,810 52,816"/>
-        <path d="M52,816 Q60,820 65,822"/>
-        <g transform="translate(35,812) rotate(-20)"><use href="#leaf-lg"/></g>
-        <g transform="translate(90,855) rotate(15)"><use href="#leaf-sm"/></g>
-        <g transform="translate(14,870)"><use href="#fl-5"/></g>
-        <g transform="translate(120,875)"><use href="#fl-5"/></g>
-        <circle cx="12"  cy="872" r="1.5" fill="#8B6520"/>
-        <circle cx="122" cy="877" r="1.2" fill="#8B6520"/>
-
-        <!-- ══ ESQUINA INFERIOR DERECHA ══ -->
-        <g transform="translate(365,820)"><use href="#r-xl"/></g>
-        <g transform="translate(405,850)"><use href="#r-sm"/></g>
-        <g transform="translate(325,855) rotate(-10)"><use href="#r-sm"/></g>
-        <path d="M415,800 Q392,810 378,816"/>
-        <path d="M378,816 Q370,820 365,822"/>
-        <g transform="translate(395,812) rotate(20)"><use href="#leaf-lg"/></g>
-        <g transform="translate(340,855) rotate(-15)"><use href="#leaf-sm"/></g>
-        <g transform="translate(416,870)"><use href="#fl-5"/></g>
-        <g transform="translate(310,875)"><use href="#fl-5"/></g>
-        <circle cx="418" cy="872" r="1.5" fill="#8B6520"/>
-        <circle cx="308" cy="877" r="1.2" fill="#8B6520"/>
-
-        <!-- ══ BORDE INF CENTRO ══ -->
-        <g transform="translate(215,870)"><use href="#r-md"/></g>
-        <path d="M150,882 Q182,875 205,870"/>
-        <path d="M280,882 Q248,875 225,870"/>
-        <g transform="translate(162,880) rotate(5)"><use href="#leaf-sm"/></g>
-        <g transform="translate(268,880) rotate(-5)"><use href="#leaf-sm"/></g>
-        <circle cx="148" cy="883" r="1.2" fill="#8B6520"/>
-        <circle cx="282" cy="883" r="1.2" fill="#8B6520"/>
-
-        <!-- ══ BORDE IZQ CENTRO-BAJO ══ -->
-        <g transform="translate(25,620)"><use href="#r-sm"/></g>
-        <path d="M8,580 Q14,598 20,610"/>
-        <path d="M8,660 Q14,642 20,630"/>
-        <g transform="translate(8,578) rotate(-20)"><use href="#leaf-sm"/></g>
-        <g transform="translate(8,662) rotate(20)"><use href="#leaf-sm"/></g>
-
-        <!-- ══ BORDE DER CENTRO-BAJO ══ -->
-        <g transform="translate(405,620)"><use href="#r-sm"/></g>
-        <path d="M422,580 Q416,598 410,610"/>
-        <path d="M422,660 Q416,642 410,630"/>
-        <g transform="translate(422,578) rotate(20)"><use href="#leaf-sm"/></g>
-        <g transform="translate(422,662) rotate(-20)"><use href="#leaf-sm"/></g>
-
-        <!-- ══ FLORES MEDIAS (ambos lados) ══ -->
-        <g transform="translate(18,450)"><use href="#fl-5"/></g>
-        <g transform="translate(412,450)"><use href="#fl-5"/></g>
-        <circle cx="16"  cy="452" r="1.2" fill="#8B6520"/>
-        <circle cx="414" cy="452" r="1.2" fill="#8B6520"/>
-
-      </g>
-    </svg>
-
-    <!-- Solapa triangular superior -->
-    <div class="envelope-flap" id="env-flap">
-      <div class="flap-surface"></div>
-    </div>
-    <!-- Línea de pliegue visible -->
-    <div class="flap-fold-line"></div>
-
-    <!-- Sello de cera — grande, centrado, orgánico -->
-    <div class="wax-seal" id="wax-seal">
-      <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <radialGradient id="wG" cx="36%" cy="28%" r="68%">
-            <stop offset="0%"   stop-color="#D4523C"/>
-            <stop offset="25%"  stop-color="#B83828"/>
-            <stop offset="55%"  stop-color="#9A2618"/>
-            <stop offset="100%" stop-color="#6E1610"/>
-          </radialGradient>
-          <radialGradient id="wS" cx="35%" cy="25%" r="42%">
-            <stop offset="0%"   stop-color="rgba(255,220,200,0.35)"/>
-            <stop offset="70%"  stop-color="rgba(255,180,150,0.08)"/>
-            <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
-          </radialGradient>
-          <radialGradient id="wD" cx="50%" cy="50%" r="50%">
-            <stop offset="60%"  stop-color="rgba(0,0,0,0)"/>
-            <stop offset="100%" stop-color="rgba(60,10,5,0.25)"/>
-          </radialGradient>
-        </defs>
-
-        <!-- Blob orgánico de cera — 16 puntos de control para forma muy irregular -->
-        <path d="
-          M60,5
-          C67,3  75,6  81,12
-          C87,17 92,23 95,31
-          C98,37 99,44 98,51
-          C97,57 94,63 90,69
-          C86,74 81,79 75,83
-          C69,86 63,88 57,88
-          C51,88 45,86 39,82
-          C33,79 28,73 24,67
-          C19,60 16,52 16,44
-          C16,36 19,28 24,22
-          C29,16 36,10 44,7
-          C49,5  54,4  60,5Z"
-          fill="url(#wG)"/>
-
-        <!-- Sombra interior del borde -->
-        <path d="
-          M60,5
-          C67,3  75,6  81,12
-          C87,17 92,23 95,31
-          C98,37 99,44 98,51
-          C97,57 94,63 90,69
-          C86,74 81,79 75,83
-          C69,86 63,88 57,88
-          C51,88 45,86 39,82
-          C33,79 28,73 24,67
-          C19,60 16,52 16,44
-          C16,36 19,28 24,22
-          C29,16 36,10 44,7
-          C49,5  54,4  60,5Z"
-          fill="url(#wD)"/>
-
-        <!-- Reflejo / shine superior izquierdo -->
-        <path d="
-          M60,5 C67,3 75,6 81,12 C87,17 92,23 95,31
-          C87,16 74,8 60,7 C52,6.5 45,8 38,11
-          C43,7 51,5 60,5Z"
-          fill="url(#wS)"/>
-
-        <!-- Anillo exterior embossed (presionado) -->
-        <path d="
-          M60,14
-          C66,12 73,15 78,20
-          C84,25 87,32 87,39
-          C87,47 84,54 79,59
-          C74,64 67,67 60,67
-          C53,67 46,64 41,59
-          C36,54 33,47 33,39
-          C33,32 36,25 42,20
-          C47,15 54,12 60,14Z"
-          fill="none" stroke="rgba(255,200,180,0.28)" stroke-width="1.8"/>
-
-        <!-- Anillo interior más fino -->
-        <path d="
-          M60,18
-          C65,16 71,19 76,24
-          C81,28 83,35 83,42
-          C83,49 80,55 75,60
-          C70,64 65,66 60,66
-          C55,66 50,64 45,60
-          C40,55 37,49 37,42
-          C37,35 39,28 44,24
-          C49,19 55,16 60,18Z"
-          fill="none" stroke="rgba(255,180,160,0.15)" stroke-width="0.9"/>
-
-        <!-- 6 puntos decorativos en el anillo -->
-        <circle cx="60"  cy="14" r="1.5" fill="rgba(255,200,180,0.4)"/>
-        <circle cx="87"  cy="30" r="1.5" fill="rgba(255,200,180,0.4)"/>
-        <circle cx="87"  cy="54" r="1.5" fill="rgba(255,200,180,0.4)"/>
-        <circle cx="60"  cy="68" r="1.5" fill="rgba(255,200,180,0.4)"/>
-        <circle cx="33"  cy="54" r="1.5" fill="rgba(255,200,180,0.4)"/>
-        <circle cx="33"  cy="30" r="1.5" fill="rgba(255,200,180,0.4)"/>
-
-        <!-- Monograma caligráfico grande -->
-        <text x="60" y="44"
-          text-anchor="middle"
-          font-family="'Great Vibes', cursive"
-          font-size="28"
-          fill="rgba(255,240,235,0.92)"
-          letter-spacing="-1">D</text>
-        <!-- Separador decorativo -->
-        <text x="60" y="56"
-          text-anchor="middle"
-          font-family="Georgia, serif"
-          font-size="8"
-          fill="rgba(255,220,210,0.55)"
-          letter-spacing="5">&#x26; C</text>
-
-        <!-- Línea decorativa bajo el separador -->
-        <line x1="46" y1="60" x2="74" y2="60" stroke="rgba(255,200,180,0.2)" stroke-width="0.6"/>
-      </svg>
-    </div>
+    <!-- Video de apertura (IA generada) — oculto hasta el tap -->
+    <video id="env-video" src="sobre-apertura.mp4" playsinline webkit-playsinline muted preload="auto"></video>
 
     <!-- Hint inferior -->
     <p class="envelope-hint" id="env-hint">Toca para abrir</p>
@@ -2075,38 +1660,39 @@
   gsap.registerPlugin(ScrollTrigger);
 
   /* ══════════════════════════════════════════════════
-     ENVELOPE ANIMATION — PANTALLA COMPLETA
+     ENVELOPE ANIMATION — IMAGEN + VIDEO IA
   ══════════════════════════════════════════════════ */
   (function () {
-    var screen    = document.getElementById('envelope-screen');
-    var flap      = document.getElementById('env-flap');
-    var seal      = document.getElementById('wax-seal');
+    var envScreen = document.getElementById('envelope-screen');
+    var envImage  = document.getElementById('env-image');
+    var envVideo  = document.getElementById('env-video');
     var hint      = document.getElementById('env-hint');
-    var foldLine  = document.querySelector('.flap-fold-line');
     var confettiC = document.getElementById('confetti-container');
     var opened    = false;
 
-    // ── Entrada: el sobre aparece con fade-in suave ──
+    // ── Paso 1: La imagen aparece con fade-in suave ──
     gsap.timeline()
-      .to(screen, {
+      .to(envScreen, {
         opacity: 1,
-        duration: 1.4,
+        duration: 1.2,
         ease: 'power2.out',
-        delay: 0.2
+        delay: 0.3
       })
-      // Sello pulsa suavemente para invitar a tocar
-      .to(seal, {
-        scale: 1.06,
-        duration: 1.8,
-        ease: 'sine.inOut',
-        repeat: -1,
-        yoyo: true
-      }, '-=0.2')
       .to(hint, {
         opacity: 1,
-        duration: 0.8,
+        duration: 0.9,
         ease: 'power2.out'
-      }, '-=1.4');
+      }, '-=0.5');
+
+    // Pulso sutil de la imagen para invitar a tocar
+    gsap.to(envImage, {
+      scale: 1.015,
+      duration: 2.2,
+      ease: 'sine.inOut',
+      repeat: -1,
+      yoyo: true,
+      delay: 1.5
+    });
 
     // ── Confetti dorado ──
     function spawnConfetti() {
@@ -2138,68 +1724,59 @@
       }
     }
 
-    // ── Apertura ──
+    // ── Paso 3: el video termina → fade out blanco → invitación ──
+    function onVideoEnded() {
+      spawnConfetti();
+      gsap.to(envScreen, {
+        opacity: 0,
+        duration: 1.1,
+        ease: 'power2.inOut',
+        delay: 0.1,
+        onComplete: function () {
+          envScreen.style.display = 'none';
+          heroAnim();
+          spawnParticles();
+          scrollAnims();
+          startCountdown();
+        }
+      });
+    }
+
+    envVideo.addEventListener('ended', onVideoEnded);
+
+    // ── Paso 2: usuario toca → imagen fades → video se reproduce ──
     function openEnvelope() {
       if (opened) return;
       opened = true;
 
-      // Parar pulso del sello
-      gsap.killTweensOf(seal);
+      // Detener pulso de la imagen
+      gsap.killTweensOf(envImage);
 
-      var openTl = gsap.timeline({
+      // Hint desaparece
+      gsap.to(hint, { opacity: 0, duration: 0.25 });
+
+      // Imagen se va con fade out rápido
+      gsap.to(envImage, {
+        opacity: 0,
+        duration: 0.6,
+        ease: 'power2.inOut',
         onComplete: function () {
-          gsap.to(screen, {
-            opacity: 0,
-            duration: 1.0,
-            ease: 'power2.inOut',
-            delay: 0.5,
-            onComplete: function () {
-              screen.style.display = 'none';
-              heroAnim();
-              spawnParticles();
-              scrollAnims();
-              startCountdown();
-            }
+          // Video aparece y comienza a reproducirse
+          envVideo.style.opacity = '1';
+          envVideo.play().catch(function () {
+            // Si el navegador bloquea el play, forzamos la invitación
+            onVideoEnded();
           });
         }
       });
-
-      openTl
-        // 1. Hint desaparece
-        .to(hint, { opacity: 0, duration: 0.2 })
-        // 2. Sello se rompe / expande y desaparece
-        .to(seal, {
-          scale: 1.5,
-          opacity: 0,
-          duration: 0.4,
-          ease: 'power3.in'
-        }, '-=0.1')
-        // 3. Línea de pliegue se ilumina brevemente
-        .to(foldLine, {
-          opacity: 0,
-          duration: 0.3
-        }, '-=0.2')
-        // 4. La solapa se abre hacia arriba con perspectiva real
-        .to(flap, {
-          rotateX: -178,
-          transformPerspective: 900,
-          transformOrigin: 'top center',
-          duration: 1.3,
-          ease: 'power3.inOut'
-        }, '-=0.1')
-        // 5. Zoom sutil del sobre completo para dramatismo
-        .to(screen, {
-          scale: 1.06,
-          duration: 0.8,
-          ease: 'power2.out'
-        }, '-=0.5');
-
-      // Confetti cuando la solapa se abre
-      setTimeout(spawnConfetti, 650);
     }
 
-    // Tap en cualquier punto de la pantalla abre el sobre
-    screen.addEventListener('click', openEnvelope);
+    // Tap en cualquier punto abre el sobre
+    envScreen.addEventListener('click', openEnvelope);
+    envScreen.addEventListener('touchstart', function (e) {
+      e.preventDefault();
+      openEnvelope();
+    }, { passive: false });
   }());
 
   /* ── heroAnim ──────────────────────────────────── */
