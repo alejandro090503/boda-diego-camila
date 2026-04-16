@@ -447,13 +447,17 @@
 
     .hero-names {
       font-family: var(--script);
-      font-size: 76px;
+      /* clamp: mínimo 48px, fluido 20vw, máximo 76px
+         A 375px → 75px ok; a 320px → 64px ok; evita desbordamiento */
+      font-size: clamp(48px, 20vw, 76px);
       line-height: 1.05;
       color: #F8F4EE;
       clip-path: inset(0 100% 0 0);
       will-change: clip-path;
       text-shadow: 0 2px 24px rgba(44,36,24,.3), 0 0 60px rgba(201,169,110,0.15);
       white-space: nowrap;
+      /* Asegura que el texto no quede recortado por overflow del hero */
+      padding: 0 8px;
     }
 
     .hero-amp {
@@ -1328,16 +1332,16 @@
   <div id="scroll-progress" role="progressbar" aria-hidden="true"></div>
 
   <!-- MUSIC BUTTON -->
-  <button id="music-btn" aria-label="Reproducir o pausar Marry Me de Train" title="Marry Me · Train">
+  <button id="music-btn" aria-label="Reproducir o pausar música" title="Música · Toca para escuchar">
     <div class="music-ring" aria-hidden="true"></div>
     <svg id="ico-play"  viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.14v14l11-7-11-7z"/></svg>
     <svg id="ico-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
   </button>
 
-  <!-- YouTube hidden player -->
-  <div id="yt-wrap" style="position:fixed;bottom:-2000px;left:-2000px;width:1px;height:1px;overflow:hidden;" aria-hidden="true">
-    <div id="yt-player"></div>
-  </div>
+  <!-- Audio HTML5 — Bensound "Romantic" (royalty-free, free to use) -->
+  <audio id="bg-audio" loop preload="none" aria-hidden="true">
+    <source src="https://www.bensound.com/bensound-music/bensound-romantic.mp3" type="audio/mpeg" />
+  </audio>
 
   <!-- ════════════════════════════════════
        MAIN CONTENT
@@ -1739,45 +1743,47 @@
   <script>
   'use strict';
 
-  /* ── YouTube IFrame API ────────────────────────── */
-  var ytPlayer, ytReady = false, pendingPlay = false;
-
-  window.onYouTubeIframeAPIReady = function () {
-    ytPlayer = new YT.Player('yt-player', {
-      height: '1', width: '1',
-      videoId: '4pMX7ahEZMY',
-      playerVars: { autoplay: 0, controls: 0, loop: 1,
-                    playlist: '4pMX7ahEZMY', rel: 0, modestbranding: 1 },
-      events: {
-        onReady: function (e) {
-          ytReady = true;
-          e.target.setVolume(45);
-          if (pendingPlay) { e.target.playVideo(); }
-        }
-      }
-    });
-  };
-
-  (function () {
-    var s = document.createElement('script');
-    s.src = 'https://www.youtube.com/iframe_api';
-    document.head.appendChild(s);
-  }());
-
-  /* ── Music toggle ──────────────────────────────── */
+  /* ── Música — HTML5 Audio (Bensound Romantic, royalty-free) ── */
+  var bgAudio   = document.getElementById('bg-audio');
   var musicBtn  = document.getElementById('music-btn');
   var icoPlay   = document.getElementById('ico-play');
   var icoPause  = document.getElementById('ico-pause');
   var playing   = false;
 
+  bgAudio.volume = 0.45;
+
+  function setMusicState(on) {
+    playing = on;
+    musicBtn.classList.toggle('playing', on);
+    icoPlay.style.display  = on ? 'none' : '';
+    icoPause.style.display = on ? ''     : 'none';
+  }
+
   musicBtn.addEventListener('click', function () {
-    playing = !playing;
-    musicBtn.classList.toggle('playing', playing);
-    icoPlay.style.display  = playing ? 'none'  : '';
-    icoPause.style.display = playing ? ''      : 'none';
-    if (ytReady) { playing ? ytPlayer.playVideo() : ytPlayer.pauseVideo(); }
-    else { pendingPlay = playing; }
+    if (!playing) {
+      bgAudio.play()
+        .then(function () { setMusicState(true); })
+        .catch(function () {
+          /* El browser bloqueó el audio — aviso visual breve */
+          musicBtn.style.outline = '2px solid #e74c3c';
+          setTimeout(function () { musicBtn.style.outline = ''; }, 1200);
+        });
+    } else {
+      bgAudio.pause();
+      setMusicState(false);
+    }
   });
+
+  /* Fade-in suave al empezar */
+  bgAudio.addEventListener('play', function () {
+    bgAudio.volume = 0;
+    var vol = 0;
+    var fadeIn = setInterval(function () {
+      vol = Math.min(vol + 0.03, 0.45);
+      bgAudio.volume = vol;
+      if (vol >= 0.45) clearInterval(fadeIn);
+    }, 80);
+  }, { once: true });
 
   /* ── Scroll progress bar ───────────────────────── */
   var progressBar = document.getElementById('scroll-progress');
