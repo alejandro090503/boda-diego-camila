@@ -119,12 +119,12 @@
       transform: scale(1.18);
     }
 
-    /* Overlay blanco que cubre todo al finalizar — evita flash de contenido */
+    /* Overlay blanco global — vive FUERA del sobre para persistir tras su eliminación */
     #env-flash {
-      position: absolute;
+      position: fixed;
       inset: 0;
       background: #fff;
-      z-index: 50;
+      z-index: 9999;
       opacity: 0;
       pointer-events: none;
     }
@@ -1182,12 +1182,12 @@
     <!-- Video de apertura (IA generada) — oculto hasta el tap -->
     <video id="env-video" src="sobre-apertura.mp4" playsinline webkit-playsinline muted preload="auto"></video>
 
-    <!-- Overlay blanco: se activa al terminar el video para cubrir cualquier flash -->
-    <div id="env-flash"></div>
-
     <!-- Hint inferior -->
     <p class="envelope-hint" id="env-hint">Toca para abrir</p>
   </div>
+
+  <!-- Overlay blanco global — fuera del sobre para persistir y hacer fade suave a la invitación -->
+  <div id="env-flash"></div>
 
   <!-- Confetti container -->
   <div class="confetti-container" id="confetti-container"></div>
@@ -1695,12 +1695,15 @@
       delay: 1.5
     });
 
-    // ── Paso 3: el video termina → flash blanco cubre todo → invitación ──
-    var flashStarted = false;
+    // ── Paso 3: flash blanco → preparar invitación detrás → disolver flash ──
+    var flashStarted  = false;
+    var invitationReady = false;
 
-    function showInvitation() {
+    // Monta la invitación detrás del flash blanco (invisible para el usuario)
+    function prepareInvitation() {
+      if (invitationReady) return;
+      invitationReady = true;
       envScreen.style.display = 'none';
-      // Revelar el contenido de la invitación (estaba oculto para no spoilear)
       var mainEl = document.getElementById('main-content');
       if (mainEl) mainEl.style.visibility = 'visible';
       heroAnim();
@@ -1709,23 +1712,34 @@
       startCountdown();
     }
 
-    // Flash blanco arranca 2s antes del final — en móvil timeupdate es impreciso
-    // así que empezamos muy temprano con fade de 1s; a duration-1 ya es 100% blanco
+    // Disuelve el flash revelando la invitación suavemente
+    function revealInvitation() {
+      prepareInvitation();
+      gsap.to(envFlash, {
+        opacity: 0,
+        duration: 1.2,
+        ease: 'power2.out',
+        onComplete: function () { envFlash.style.display = 'none'; }
+      });
+    }
+
+    // Flash blanco arranca 2s antes del final del video
     envVideo.addEventListener('timeupdate', function () {
       if (!flashStarted && envVideo.duration && envVideo.currentTime >= envVideo.duration - 2) {
         flashStarted = true;
         gsap.to(envFlash, {
           opacity: 1,
           duration: 1,
-          ease: 'power2.in'
+          ease: 'power2.in',
+          onComplete: revealInvitation
         });
       }
     });
 
-    // Cuando el video termina el flash ya es blanco sólido — corte limpio
+    // Seguro: si el video termina antes de que el flash complete, forzar
     envVideo.addEventListener('ended', function () {
       gsap.set(envFlash, { opacity: 1 });
-      showInvitation();
+      revealInvitation();
     });
 
     // ── Paso 2: usuario toca → crossfade imagen→video simultáneo (sin negro) ──
@@ -1751,7 +1765,7 @@
 
       // Si el navegador bloquea el play (política de autoplay), ir directo a la invitación
       if (playPromise !== undefined) {
-        playPromise.catch(function () { showInvitation(); });
+        playPromise.catch(function () { revealInvitation(); });
       }
     }
 
