@@ -447,17 +447,16 @@
 
     .hero-names {
       font-family: var(--script);
-      /* clamp: mínimo 48px, fluido 20vw, máximo 76px
-         A 375px → 75px ok; a 320px → 64px ok; evita desbordamiento */
-      font-size: clamp(48px, 20vw, 76px);
-      line-height: 1.05;
+      /* Dos líneas: "Diego &" / "Camila" — sin nowrap para que no desborde */
+      font-size: clamp(52px, 16vw, 68px);
+      line-height: 1.15;
       color: #F8F4EE;
       clip-path: inset(0 100% 0 0);
       will-change: clip-path;
       text-shadow: 0 2px 24px rgba(44,36,24,.3), 0 0 60px rgba(201,169,110,0.15);
-      white-space: nowrap;
-      /* Asegura que el texto no quede recortado por overflow del hero */
-      padding: 0 8px;
+      white-space: normal;
+      text-align: center;
+      padding: 0 16px;
     }
 
     .hero-amp {
@@ -1338,10 +1337,7 @@
     <svg id="ico-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
   </button>
 
-  <!-- Audio HTML5 — Bensound "Romantic" (royalty-free, free to use) -->
-  <audio id="bg-audio" loop preload="none" aria-hidden="true">
-    <source src="https://www.bensound.com/bensound-music/bensound-romantic.mp3" type="audio/mpeg" />
-  </audio>
+  <!-- Audio generado por Web Audio API — sin dependencias externas -->
 
   <!-- ════════════════════════════════════
        MAIN CONTENT
@@ -1357,7 +1353,7 @@
 
       <div class="hero-content">
         <div class="hero-ornament-top" id="hero-orn-top" aria-hidden="true"></div>
-        <h1 class="hero-names" id="hero-names">Diego &amp; Camila</h1>
+        <h1 class="hero-names" id="hero-names">Diego &amp;<br>Camila</h1>
         <div class="hero-ornament-bottom" id="hero-orn-bottom" aria-hidden="true"></div>
         <p class="hero-date"  id="hero-date">20 · Septiembre · MMXXVII</p>
         <p class="hero-city"  id="hero-city">Ciudad de México</p>
@@ -1743,47 +1739,122 @@
   <script>
   'use strict';
 
-  /* ── Música — HTML5 Audio (Bensound Romantic, royalty-free) ── */
-  var bgAudio   = document.getElementById('bg-audio');
+  /* ══════════════════════════════════════════════════
+     MÚSICA AMBIENTE — Web Audio API
+     Progresión romántica: Am → F → C → G
+     Arpeggio de pad suave + delay reverb + fade in/out
+  ══════════════════════════════════════════════════ */
+  var wAudio = (function () {
+    var ctx, master, delay, feedback;
+    var playing = false;
+    var loopTimer = null;
+    var nextBeat  = 0;
+
+    /* Progresión Am–F–C–G en Hz (notas de la escala) */
+    var PROG = [
+      [110.00, 130.81, 164.81, 220.00, 261.63],  /* Am  */
+      [87.307, 110.00, 130.81, 174.61, 220.00],  /* F   */
+      [130.81, 164.81, 196.00, 261.63, 329.63],  /* C   */
+      [98.000, 123.47, 146.83, 196.00, 246.94],  /* G   */
+    ];
+    var CHORD_DUR = 3.0;   /* segundos por acorde */
+    var VEL       = 0.09;  /* volumen por nota    */
+
+    function buildGraph() {
+      ctx      = new (window.AudioContext || window.webkitAudioContext)();
+      master   = ctx.createGain();
+      master.gain.value = 0;
+
+      /* Delay reverb simple */
+      delay    = ctx.createDelay(1.0);
+      feedback = ctx.createGain();
+      delay.delayTime.value = 0.38;
+      feedback.gain.value   = 0.32;
+      delay.connect(feedback);
+      feedback.connect(delay);
+      delay.connect(master);
+      master.connect(ctx.destination);
+    }
+
+    function note(freq, start, dur) {
+      var osc  = ctx.createOscillator();
+      var env  = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      env.gain.setValueAtTime(0, start);
+      env.gain.linearRampToValueAtTime(VEL, start + 0.4);
+      env.gain.setValueAtTime(VEL, start + dur - 0.7);
+      env.gain.linearRampToValueAtTime(0, start + dur);
+      osc.connect(env);
+      env.connect(master);
+      env.connect(delay);
+      osc.start(start);
+      osc.stop(start + dur + 0.1);
+    }
+
+    function scheduleLoop(t) {
+      PROG.forEach(function (chord, ci) {
+        var base = t + ci * CHORD_DUR;
+        chord.forEach(function (freq, ni) {
+          /* arpeggio: cada nota 80ms después */
+          note(freq,     base + ni * 0.08,       CHORD_DUR);
+          /* octava alta más suave */
+          note(freq * 2, base + ni * 0.08 + 0.15, CHORD_DUR - 0.3);
+        });
+      });
+      return t + PROG.length * CHORD_DUR;
+    }
+
+    function tick() {
+      if (!playing) return;
+      nextBeat  = scheduleLoop(nextBeat);
+      loopTimer = setTimeout(tick, (PROG.length * CHORD_DUR - 1) * 1000);
+    }
+
+    return {
+      start: function () {
+        if (playing) return;
+        if (!ctx) buildGraph();
+        if (ctx.state === 'suspended') ctx.resume();
+        playing  = true;
+        nextBeat = ctx.currentTime + 0.1;
+        master.gain.cancelScheduledValues(ctx.currentTime);
+        master.gain.setValueAtTime(0, ctx.currentTime);
+        master.gain.linearRampToValueAtTime(0.65, ctx.currentTime + 3.5);
+        tick();
+      },
+      stop: function () {
+        playing = false;
+        clearTimeout(loopTimer);
+        if (master) {
+          master.gain.cancelScheduledValues(ctx.currentTime);
+          master.gain.linearRampToValueAtTime(0, ctx.currentTime + 1.8);
+        }
+      },
+      isOn: function () { return playing; }
+    };
+  }());
+
+  /* ── Botón de música ───────────────────────────── */
   var musicBtn  = document.getElementById('music-btn');
   var icoPlay   = document.getElementById('ico-play');
   var icoPause  = document.getElementById('ico-pause');
-  var playing   = false;
 
-  bgAudio.volume = 0.45;
-
-  function setMusicState(on) {
-    playing = on;
+  function setMusicUI(on) {
     musicBtn.classList.toggle('playing', on);
     icoPlay.style.display  = on ? 'none' : '';
     icoPause.style.display = on ? ''     : 'none';
   }
 
   musicBtn.addEventListener('click', function () {
-    if (!playing) {
-      bgAudio.play()
-        .then(function () { setMusicState(true); })
-        .catch(function () {
-          /* El browser bloqueó el audio — aviso visual breve */
-          musicBtn.style.outline = '2px solid #e74c3c';
-          setTimeout(function () { musicBtn.style.outline = ''; }, 1200);
-        });
+    if (wAudio.isOn()) {
+      wAudio.stop();
+      setMusicUI(false);
     } else {
-      bgAudio.pause();
-      setMusicState(false);
+      wAudio.start();
+      setMusicUI(true);
     }
   });
-
-  /* Fade-in suave al empezar */
-  bgAudio.addEventListener('play', function () {
-    bgAudio.volume = 0;
-    var vol = 0;
-    var fadeIn = setInterval(function () {
-      vol = Math.min(vol + 0.03, 0.45);
-      bgAudio.volume = vol;
-      if (vol >= 0.45) clearInterval(fadeIn);
-    }, 80);
-  }, { once: true });
 
   /* ── Scroll progress bar ───────────────────────── */
   var progressBar = document.getElementById('scroll-progress');
