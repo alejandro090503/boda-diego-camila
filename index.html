@@ -183,32 +183,33 @@
       pointer-events: none;
     }
 
-    /* Wax seal — en la unión del flapo con el cuerpo */
+    /* Wax seal — orgánico con SVG */
     .wax-seal {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 35% 35%, #c0392b, #96281b 60%, #7a1f14);
-      box-shadow:
-        0 4px 15px rgba(0,0,0,0.4),
-        inset 0 2px 4px rgba(255,255,255,0.2),
-        inset 0 -2px 4px rgba(0,0,0,0.3);
+      width: 80px;
+      height: 80px;
       z-index: 10;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      filter: drop-shadow(0 6px 18px rgba(0,0,0,0.45)) drop-shadow(0 2px 4px rgba(0,0,0,0.25));
     }
 
-    .wax-seal::before {
-      content: 'D & C';
-      font-family: var(--script);
-      font-size: 14px;
-      color: rgba(255,255,255,0.85);
-      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    .wax-seal svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    /* Botanical SVG overlay en el cuerpo del sobre */
+    .env-botanical {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      border-radius: 4px;
+      overflow: hidden;
     }
 
     /* Envelope flap (top) — superficie única, sin front/back
@@ -238,13 +239,8 @@
       position: absolute;
       inset: 0;
       clip-path: polygon(0 0, 50% 100%, 100% 0);
-      background: repeating-linear-gradient(
-        -45deg,
-        transparent,
-        transparent 18px,
-        rgba(255,255,255,0.04) 18px,
-        rgba(255,255,255,0.04) 19px
-      );
+      background:
+        radial-gradient(ellipse at 50% 20%, rgba(255,255,255,0.12) 0%, transparent 60%);
     }
 
     /* Card inside envelope — empieza oculta bajo el cuerpo (z-index: 2 < body z-index: 3) */
@@ -1318,16 +1314,222 @@
         <div class="card-ornament-bottom"></div>
       </div>
 
-      <!-- Envelope body -->
-      <div class="envelope-body"></div>
+      <!-- Envelope body + botanical texture -->
+      <div class="envelope-body">
+        <!-- Textura botánica embossed -->
+        <svg class="env-botanical" viewBox="0 0 320 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <!-- Rosa reutilizable -->
+            <g id="rose-lg">
+              <!-- pétalos externos: 6 elipses rotadas -->
+              <ellipse cx="0" cy="-14" rx="4.5" ry="8" opacity="0.9"/>
+              <ellipse cx="0" cy="-14" rx="4.5" ry="8" transform="rotate(60)" opacity="0.9"/>
+              <ellipse cx="0" cy="-14" rx="4.5" ry="8" transform="rotate(120)" opacity="0.9"/>
+              <ellipse cx="0" cy="-14" rx="4.5" ry="8" transform="rotate(180)" opacity="0.9"/>
+              <ellipse cx="0" cy="-14" rx="4.5" ry="8" transform="rotate(240)" opacity="0.9"/>
+              <ellipse cx="0" cy="-14" rx="4.5" ry="8" transform="rotate(300)" opacity="0.9"/>
+              <!-- pétalos internos -->
+              <ellipse cx="0" cy="-9"  rx="3" ry="5.5" transform="rotate(30)"/>
+              <ellipse cx="0" cy="-9"  rx="3" ry="5.5" transform="rotate(90)"/>
+              <ellipse cx="0" cy="-9"  rx="3" ry="5.5" transform="rotate(150)"/>
+              <ellipse cx="0" cy="-9"  rx="3" ry="5.5" transform="rotate(210)"/>
+              <ellipse cx="0" cy="-9"  rx="3" ry="5.5" transform="rotate(270)"/>
+              <ellipse cx="0" cy="-9"  rx="3" ry="5.5" transform="rotate(330)"/>
+              <!-- centro -->
+              <circle cx="0" cy="0" r="5"/>
+              <circle cx="0" cy="0" r="2.5"/>
+            </g>
+            <g id="rose-sm">
+              <ellipse cx="0" cy="-9"  rx="3" ry="6"/>
+              <ellipse cx="0" cy="-9"  rx="3" ry="6" transform="rotate(60)"/>
+              <ellipse cx="0" cy="-9"  rx="3" ry="6" transform="rotate(120)"/>
+              <ellipse cx="0" cy="-9"  rx="3" ry="6" transform="rotate(180)"/>
+              <ellipse cx="0" cy="-9"  rx="3" ry="6" transform="rotate(240)"/>
+              <ellipse cx="0" cy="-9"  rx="3" ry="6" transform="rotate(300)"/>
+              <circle cx="0" cy="0" r="4"/>
+              <circle cx="0" cy="0" r="2"/>
+            </g>
+            <g id="leaf">
+              <path d="M0,0 C-4,-6 -5,-14 0,-18 C5,-14 4,-6 0,0Z"/>
+            </g>
+            <g id="flower-sm">
+              <ellipse cx="0" cy="-5" rx="2.5" ry="4"/>
+              <ellipse cx="0" cy="-5" rx="2.5" ry="4" transform="rotate(72)"/>
+              <ellipse cx="0" cy="-5" rx="2.5" ry="4" transform="rotate(144)"/>
+              <ellipse cx="0" cy="-5" rx="2.5" ry="4" transform="rotate(216)"/>
+              <ellipse cx="0" cy="-5" rx="2.5" ry="4" transform="rotate(288)"/>
+              <circle cx="0" cy="0" r="2.5"/>
+            </g>
+          </defs>
+
+          <g stroke="#7A5C10" stroke-width="0.65" fill="none" stroke-linecap="round" opacity="0.18">
+
+            <!-- ── ESQUINA SUPERIOR IZQUIERDA ── -->
+            <g transform="translate(42,30)">
+              <use href="#rose-lg"/>
+            </g>
+            <!-- hojas tallo izq-arr -->
+            <path d="M28,48 Q22,38 30,30"/>
+            <g transform="translate(22,44) rotate(-20)"><use href="#leaf"/></g>
+            <g transform="translate(34,54) rotate(15)"><use href="#leaf"/></g>
+            <!-- flor pequeña -->
+            <g transform="translate(14,24)"><use href="#flower-sm"/></g>
+            <g transform="translate(58,15)"><use href="#flower-sm"/></g>
+            <!-- tallos -->
+            <path d="M8,50 Q16,40 30,34"/>
+            <path d="M20,60 Q30,50 40,44"/>
+            <circle cx="8"  cy="52" r="1.2" fill="#7A5C10"/>
+            <circle cx="18" cy="62" r="1"   fill="#7A5C10"/>
+            <circle cx="62" cy="12" r="1"   fill="#7A5C10"/>
+
+            <!-- ── ESQUINA SUPERIOR DERECHA ── -->
+            <g transform="translate(278,30)">
+              <use href="#rose-lg"/>
+            </g>
+            <path d="M292,48 Q298,38 290,30"/>
+            <g transform="translate(298,44) rotate(20)"><use href="#leaf"/></g>
+            <g transform="translate(286,54) rotate(-15)"><use href="#leaf"/></g>
+            <g transform="translate(306,24)"><use href="#flower-sm"/></g>
+            <g transform="translate(262,15)"><use href="#flower-sm"/></g>
+            <path d="M312,50 Q304,40 290,34"/>
+            <path d="M300,60 Q290,50 280,44"/>
+            <circle cx="312" cy="52" r="1.2" fill="#7A5C10"/>
+            <circle cx="302" cy="62" r="1"   fill="#7A5C10"/>
+            <circle cx="258" cy="12" r="1"   fill="#7A5C10"/>
+
+            <!-- ── ESQUINA INFERIOR IZQUIERDA ── -->
+            <g transform="translate(40,188)">
+              <use href="#rose-sm"/>
+            </g>
+            <g transform="translate(18,200) rotate(10)"><use href="#leaf"/></g>
+            <g transform="translate(52,202) rotate(-10)"><use href="#leaf"/></g>
+            <path d="M12,180 Q26,190 36,194"/>
+            <g transform="translate(60,210)"><use href="#flower-sm"/></g>
+            <circle cx="10" cy="178" r="1" fill="#7A5C10"/>
+            <circle cx="62" cy="212" r="1" fill="#7A5C10"/>
+
+            <!-- ── ESQUINA INFERIOR DERECHA ── -->
+            <g transform="translate(280,188)">
+              <use href="#rose-sm"/>
+            </g>
+            <g transform="translate(302,200) rotate(-10)"><use href="#leaf"/></g>
+            <g transform="translate(268,202) rotate(10)"><use href="#leaf"/></g>
+            <path d="M308,180 Q294,190 284,194"/>
+            <g transform="translate(260,210)"><use href="#flower-sm"/></g>
+            <circle cx="310" cy="178" r="1" fill="#7A5C10"/>
+            <circle cx="258" cy="212" r="1" fill="#7A5C10"/>
+
+            <!-- ── CENTRO SUPERIOR (entre las flores de esquina) ── -->
+            <g transform="translate(160,18)">
+              <use href="#rose-sm"/>
+            </g>
+            <g transform="translate(120,12) rotate(-5)"><use href="#leaf"/></g>
+            <g transform="translate(200,12) rotate(5)"><use href="#leaf"/></g>
+            <path d="M100,20 Q130,10 150,14"/>
+            <path d="M220,20 Q190,10 170,14"/>
+            <g transform="translate(94,28)"><use href="#flower-sm"/></g>
+            <g transform="translate(226,28)"><use href="#flower-sm"/></g>
+            <circle cx="92"  cy="16" r="1"   fill="#7A5C10"/>
+            <circle cx="228" cy="16" r="1"   fill="#7A5C10"/>
+
+            <!-- ── BORDE IZQUIERDO (centro) ── -->
+            <g transform="translate(12,110)">
+              <use href="#flower-sm"/>
+            </g>
+            <path d="M4,90 Q8,100 10,112"/>
+            <path d="M4,130 Q8,120 10,108"/>
+            <g transform="translate(6,88) rotate(-30)"><use href="#leaf"/></g>
+            <g transform="translate(6,132) rotate(30)"><use href="#leaf"/></g>
+
+            <!-- ── BORDE DERECHO (centro) ── -->
+            <g transform="translate(308,110)">
+              <use href="#flower-sm"/>
+            </g>
+            <path d="M316,90 Q312,100 310,112"/>
+            <path d="M316,130 Q312,120 310,108"/>
+            <g transform="translate(314,88) rotate(30)"><use href="#leaf"/></g>
+            <g transform="translate(314,132) rotate(-30)"><use href="#leaf"/></g>
+
+            <!-- ── PUNTOS DECORATIVOS dispersos ── -->
+            <circle cx="80"  cy="8"   r="1.2" fill="#7A5C10"/>
+            <circle cx="240" cy="8"   r="1.2" fill="#7A5C10"/>
+            <circle cx="4"   cy="70"  r="1"   fill="#7A5C10"/>
+            <circle cx="4"   cy="150" r="1"   fill="#7A5C10"/>
+            <circle cx="316" cy="70"  r="1"   fill="#7A5C10"/>
+            <circle cx="316" cy="150" r="1"   fill="#7A5C10"/>
+            <circle cx="80"  cy="214" r="1.2" fill="#7A5C10"/>
+            <circle cx="240" cy="214" r="1.2" fill="#7A5C10"/>
+          </g>
+        </svg>
+      </div>
 
       <!-- Flap — superficie única -->
       <div class="envelope-flap" id="env-flap">
         <div class="flap-surface"></div>
       </div>
 
-      <!-- Wax seal -->
-      <div class="wax-seal" id="wax-seal"></div>
+      <!-- Wax seal orgánico SVG -->
+      <div class="wax-seal" id="wax-seal">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="waxGrd" cx="37%" cy="30%" r="65%">
+              <stop offset="0%"   stop-color="#c9503a"/>
+              <stop offset="40%"  stop-color="#a83224"/>
+              <stop offset="100%" stop-color="#7a1e14"/>
+            </radialGradient>
+            <radialGradient id="waxShine" cx="38%" cy="28%" r="40%">
+              <stop offset="0%"   stop-color="rgba(255,255,255,0.28)"/>
+              <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+            </radialGradient>
+          </defs>
+          <!-- Blob orgánico de cera: forma irregular que imita cera derramada -->
+          <path d="
+            M50,6
+            C56,4 63,6 69,11
+            C75,15 79,21 82,28
+            C85,34 86,41 85,48
+            C84,55 81,62 76,67
+            C71,73 64,77 57,79
+            C50,81 43,80 36,77
+            C29,74 23,68 18,61
+            C13,54 10,46 11,38
+            C12,30 16,23 22,17
+            C27,12 35,7 43,6
+            C45,5.5 48,5.5 50,6Z"
+            fill="url(#waxGrd)"/>
+          <!-- Reflejo superior -->
+          <path d="
+            M50,6
+            C56,4 63,6 69,11
+            C75,15 79,21 82,28
+            C74,18 62,10 50,8
+            C44,7.5 38,8 33,10
+            C38,7 44,5.5 50,6Z"
+            fill="url(#waxShine)"/>
+          <!-- Anillo interior embossed -->
+          <circle cx="49" cy="44" r="30" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.4"/>
+          <circle cx="49" cy="44" r="25" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.7"/>
+          <!-- Puntos decorativos en el anillo -->
+          <circle cx="49" cy="15" r="1.2" fill="rgba(255,255,255,0.25)"/>
+          <circle cx="74" cy="30" r="1.2" fill="rgba(255,255,255,0.25)"/>
+          <circle cx="74" cy="58" r="1.2" fill="rgba(255,255,255,0.25)"/>
+          <circle cx="49" cy="73" r="1.2" fill="rgba(255,255,255,0.25)"/>
+          <circle cx="24" cy="58" r="1.2" fill="rgba(255,255,255,0.25)"/>
+          <circle cx="24" cy="30" r="1.2" fill="rgba(255,255,255,0.25)"/>
+          <!-- Monograma caligráfico -->
+          <text x="49" y="40"
+            text-anchor="middle"
+            font-family="'Great Vibes', cursive"
+            font-size="20"
+            fill="rgba(255,255,255,0.90)"
+            style="text-shadow:0 1px 3px rgba(0,0,0,0.4)">D</text>
+          <text x="49" y="56"
+            text-anchor="middle"
+            font-family="'Great Vibes', cursive"
+            font-size="14"
+            fill="rgba(255,255,255,0.75)">&#38; C</text>
+        </svg>
+      </div>
     </div>
 
     <p class="envelope-hint" id="env-hint">Toca para abrir</p>
