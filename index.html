@@ -94,7 +94,7 @@
       background: #fff;
     }
 
-    /* Imagen estática del sobre — cubre toda la pantalla */
+    /* Imagen estática del sobre — cubre toda la pantalla con zoom para ocultar watermark */
     #env-image {
       position: absolute;
       inset: 0;
@@ -103,6 +103,7 @@
       object-fit: cover;
       object-position: center;
       z-index: 2;
+      transform: scale(1.18);
     }
 
     /* Video de apertura — oculto hasta que el usuario toca */
@@ -115,6 +116,7 @@
       object-position: center;
       z-index: 3;
       opacity: 0;
+      transform: scale(1.18);
     }
 
     /* Overlay blanco que cubre todo al finalizar — evita flash de contenido */
@@ -1681,7 +1683,6 @@
     var envVideo  = document.getElementById('env-video');
     var envFlash  = document.getElementById('env-flash');
     var hint      = document.getElementById('env-hint');
-    var confettiC = document.getElementById('confetti-container');
     var opened    = false;
 
     // ── Paso 1: La imagen aparece con fade-in suave ──
@@ -1698,9 +1699,9 @@
         ease: 'power2.out'
       }, '-=0.5');
 
-    // Pulso sutil de la imagen para invitar a tocar
+    // Pulso sutil de la imagen para invitar a tocar (sobre el scale base de 1.18)
     gsap.to(envImage, {
-      scale: 1.015,
+      scale: 1.20,
       duration: 2.2,
       ease: 'sine.inOut',
       repeat: -1,
@@ -1708,39 +1709,8 @@
       delay: 1.5
     });
 
-    // ── Confetti dorado ──
-    function spawnConfetti() {
-      var colors = ['#C9A96E','#E8D5A8','#D4B896','#F7E7CE','#C47E5A','#8A9E7E','#FFFDF7'];
-      for (var i = 0; i < 80; i++) {
-        var piece = document.createElement('div');
-        piece.className = 'confetti-piece';
-        piece.style.cssText =
-          'left:'   + (15 + Math.random() * 70) + '%;' +
-          'top:'    + (35 + Math.random() * 20) + '%;' +
-          'background:' + colors[Math.floor(Math.random() * colors.length)] + ';' +
-          'width:'  + (4 + Math.random() * 9) + 'px;' +
-          'height:' + (4 + Math.random() * 14) + 'px;' +
-          'border-radius:' + (Math.random() > 0.5 ? '50%' : '2px') + ';';
-        confettiC.appendChild(piece);
-        gsap.fromTo(piece,
-          { opacity: 1, scale: 0 },
-          {
-            opacity: 0, scale: 1,
-            x: (Math.random() - 0.5) * 340,
-            y: -220 - Math.random() * 500,
-            rotation: Math.random() * 720 - 360,
-            duration: 1.6 + Math.random() * 1.8,
-            ease: 'power2.out',
-            delay: Math.random() * 0.5,
-            onComplete: function () { this.targets()[0].remove(); }
-          }
-        );
-      }
-    }
-
     // ── Paso 3: el video termina → flash blanco cubre todo → invitación ──
     function onVideoEnded() {
-      spawnConfetti();
       // El flash blanco cubre el video para que no se vea ningún elemento interno
       gsap.to(envFlash, {
         opacity: 1,
